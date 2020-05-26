@@ -7,7 +7,10 @@ export default function compile(
   cwd: string,
   fixture: string,
   target: 'node' | 'web',
+  config?: string,
 ): Promise<webpack.Stats> {
+  const options = config ? { config } : {};
+
   const compiler = webpack({
     mode: 'production',
     context: cwd,
@@ -31,7 +34,7 @@ export default function compile(
                 presets: ['@babel/preset-react', '@babel/preset-typescript'],
               },
             },
-            { loader: path.resolve(__dirname, '../../src/loader.ts') },
+            { loader: path.resolve(__dirname, '../../src/loader.ts'), options },
           ],
         },
       ],

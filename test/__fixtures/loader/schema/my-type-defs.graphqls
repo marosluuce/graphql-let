@@ -1,0 +1,8 @@
+type Movie {
+    id: ID!
+    name: String!
+}
+
+type Query {
+    watcher: Movie
+}

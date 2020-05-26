@@ -7,10 +7,13 @@ import { join as pathJoin } from 'path';
 import { rimraf } from './__tools/file';
 
 const cwd = pathJoin(__dirname, '__fixtures/loader');
+const rel = (relPath: string) => pathJoin(cwd, relPath);
 
 describe('graphql-let/loader', () => {
   beforeEach(async () => {
     await rimraf(pathJoin(cwd, '__generated__'));
+    await rimraf(rel('**/*.graphql.d.ts'));
+    await rimraf(rel('**/*.graphqls.d.ts'));
   });
 
   test(
@@ -25,6 +28,23 @@ describe('graphql-let/loader', () => {
 
       deepStrictEqual(length, 1);
       ok(actual!.includes('export function useViewerQuery('));
+    },
+    60 * 1000,
+  );
+
+  test(
+    'generates types using config argument',
+    async () => {
+      const fixture = 'pages/watcher.graphql';
+      const config = '.my-graphql-let.yml';
+      const stats = await compiler(cwd, fixture, 'node', config);
+      const { 0: actual, length } = stats
+        .toJson()
+        .modules!.map((m) => m.source)
+        .filter(Boolean);
+
+      deepStrictEqual(length, 1);
+      ok(actual!.includes('export function useWatcherQuery('));
     },
     60 * 1000,
   );

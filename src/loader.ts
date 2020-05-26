@@ -1,5 +1,6 @@
 import logUpdate from 'log-update';
 import { loader } from 'webpack';
+import { getOptions } from 'loader-utils';
 import { join as pathJoin, relative as pathRelative } from 'path';
 import { processGenDts } from './lib/dts';
 import { readHash } from './lib/file';
@@ -18,8 +19,9 @@ const processGraphQLCodegenLoader = memoize(
     gqlContent: string | Buffer,
     addDependency: (path: string) => void,
     cwd: string,
+    configFilePath: string,
   ): Promise<string> => {
-    const [config, configHash] = await loadConfig(cwd);
+    const [config, configHash] = await loadConfig(cwd, configFilePath);
 
     // To pass config change on subsequent generation,
     // configHash should be primary hash seed.
@@ -76,6 +78,7 @@ const processGraphQLCodegenLoader = memoize(
 
 const graphlqCodegenLoader: loader.Loader = function (gqlContent) {
   const callback = this.async()!;
+  const options = getOptions(this);
   const { resourcePath: gqlFullPath, rootContext: cwd } = this;
 
   processGraphQLCodegenLoader(
@@ -83,6 +86,7 @@ const graphlqCodegenLoader: loader.Loader = function (gqlContent) {
     gqlContent,
     this.addDependency.bind(this),
     cwd,
+    options.config,
   )
     .then((tsxContent: string) => {
       // Pretend .tsx for later loaders.
